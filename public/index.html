@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TechDNA — Discover Your Tech Path</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #fdf8f3;
+    --surface: #fff9f4;
+    --card: #ffffff;
+    --border: #ecddd0;
+    --accent: #e8622a;
+    --accent-soft: #fef0e8;
+    --accent2: #2a7ae8;
+    --accent2-soft: #e8f0fe;
+    --warm: #f5a623;
+    --text: #1a1208;
+    --muted: #8a7060;
+    --muted-light: #c4b0a0;
+    --success: #2dba72;
+    --danger: #d63030;
+    --shadow: 0 4px 24px rgba(100,60,20,0.10);
+    --shadow-lg: 0 12px 48px rgba(100,60,20,0.15);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(232,98,42,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(42,122,232,0.06) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 48px; animation: fadeDown 0.7s ease both; }
+  .logo { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .logo-mark { width: 48px; height: 48px; flex-shrink: 0; }
+  .logo-text { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .logo-text em { font-style: normal; color: var(--accent); }
+  .tagline { font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeUp 0.5s ease both; }
+
+  /* INTRO */
+  .intro-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 48px 44px;
+    box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+  }
+  .intro-card::after {
+    content: ''; position: absolute; bottom: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(232,98,42,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .intro-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 5px 14px; border-radius: 100px; margin-bottom: 20px;
+  }
+  .intro-title { font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 800; line-height: 1.15; margin-bottom: 14px; }
+  .intro-title span { color: var(--accent); }
+  .intro-sub { color: var(--muted); font-size: 14px; line-height: 1.75; margin-bottom: 36px; }
+  .stats-row { display: flex; gap: 12px; margin-bottom: 36px; }
+  .stat { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px 12px; text-align: center; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
+  .divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .form-input {
+    width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px 16px;
+    color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,98,42,0.12); background: #fff; }
+  .form-input::placeholder { color: var(--muted-light); }
+  .form-input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(214,48,48,0.10); }
+  .field-error { color: var(--danger); font-size: 11px; margin-top: 5px; display: none; font-weight: 500; }
+  .field-error.visible { display: block; }
+
+  .btn {
+    width: 100%; padding: 16px; border: none; border-radius: 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 20px rgba(232,98,42,0.3); }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,98,42,0.4); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* QUIZ */
+  .progress-wrap { margin-bottom: 28px; }
+  .progress-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .progress-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .progress-pct { font-size: 13px; color: var(--muted); }
+  .progress-track { height: 7px; background: var(--border); border-radius: 100px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--warm)); border-radius: 100px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+
+  .question-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 40px 36px 32px;
+    box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .q-chip {
+    display: inline-flex; align-items: center;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 4px 12px; border-radius: 100px; margin-bottom: 18px;
+  }
+  .question-text { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; line-height: 1.45; color: var(--text); margin-bottom: 28px; }
+  .options-grid { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    background: var(--bg); border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 15px 18px; color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; text-align: left; transition: all 0.18s;
+    display: flex; align-items: center; gap: 14px; line-height: 1.5;
+  }
+  .option-btn:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateX(3px); }
+  .option-btn:disabled { pointer-events: none; opacity: 0.7; }
+  .option-letter {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--border); display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-weight: 700; font-size: 13px;
+    color: var(--muted); flex-shrink: 0; transition: all 0.18s;
+  }
+  .option-btn:hover .option-letter,
+  .option-btn.selected .option-letter { background: var(--accent); color: #fff; }
+  .option-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+
+  /* ANALYZING */
+  .analyzing-wrap { text-align: center; padding: 80px 20px; }
+  .pulse-ring { width: 90px; height: 90px; margin: 0 auto 32px; position: relative; }
+  .pulse-ring::before, .pulse-ring::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    border: 3px solid var(--accent); animation: pulse-out 2s ease-out infinite;
+  }
+  .pulse-ring::after { animation-delay: 1s; }
+  .pulse-core { position: absolute; inset: 20px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; }
+  @keyframes pulse-out { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+  .analyzing-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+  .analyzing-sub { color: var(--muted); font-size: 14px; margin-bottom: 36px; }
+  .steps { display: flex; flex-direction: column; gap: 12px; max-width: 320px; margin: 0 auto; }
+  .step { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted-light); opacity: 0; animation: fadeUp 0.4s ease forwards; }
+  .step.done { color: var(--success); }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background 0.3s; }
+  .step.done .step-dot { background: var(--success); }
+  .step:nth-child(1) { animation-delay: 0.4s; }
+  .step:nth-child(2) { animation-delay: 1.4s; }
+  .step:nth-child(3) { animation-delay: 2.4s; }
+  .step:nth-child(4) { animation-delay: 3.4s; }
+
+  /* RESULTS */
+  .result-top {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 40px 36px;
+    box-shadow: var(--shadow-lg); margin-bottom: 16px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .result-top::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, var(--accent), var(--warm), var(--accent2));
+  }
+  .result-congrats { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .result-greeting { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--muted); margin-bottom: 6px; }
+  .result-path { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 800; color: var(--accent); line-height: 1.1; margin-bottom: 8px; }
+  .result-tagline { font-size: 13px; color: var(--muted); font-style: italic; }
+  .result-analysis-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px 32px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .card-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .analysis-text { font-size: 14px; line-height: 1.85; color: var(--text); }
+  .secondary-card { background: var(--accent2-soft); border: 1px solid rgba(42,122,232,0.2); border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .secondary-icon-wrap { width: 44px; height: 44px; background: var(--accent2); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .secondary-label { font-size: 11px; color: var(--accent2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+  .secondary-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--text); }
+  .followup-banner { background: linear-gradient(135deg, rgba(232,98,42,0.07), rgba(245,166,35,0.07)); border: 1px solid rgba(232,98,42,0.2); border-radius: 16px; padding: 18px 22px; font-size: 13px; color: var(--muted); text-align: center; line-height: 1.7; }
+  .followup-banner strong { color: var(--accent); font-weight: 600; }
+
+  /* ERROR SCREEN */
+  .error-screen { text-align: center; padding: 60px 20px; }
+  .error-screen h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 12px; }
+  .error-screen p { color: var(--muted); font-size: 14px; margin-bottom: 24px; line-height: 1.7; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 520px) {
+    .intro-card { padding: 28px 22px; }
+    .intro-title { font-size: 28px; }
+    .stats-row { gap: 8px; }
+    .question-card { padding: 28px 20px 22px; }
+    .question-text { font-size: 19px; }
+    .result-path { font-size: 30px; }
+    .result-top { padding: 32px 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="48" rx="13" fill="#e8622a"/>
+        <path d="M15 10 Q24 17 33 10" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M15 38 Q24 31 33 38" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M15 10 C10 16 10 32 15 38" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M33 10 C38 16 38 32 33 38" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <line x1="13" y1="19" x2="35" y2="19" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="13" y1="24" x2="35" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <line x1="13" y1="29" x2="35" y2="29" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="24" cy="24" r="3.5" fill="white"/>
+      </svg>
+      <div class="logo-text">Tech<em>DNA</em></div>
+    </div>
+    <div class="tagline">Find where you naturally belong in tech</div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-card">
+      <div class="intro-eyebrow">
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>
+        AI-Powered Career Discovery
+      </div>
+      <div class="intro-title">What kind of<br/>tech person<br/>are <span>you?</span></div>
+      <div class="intro-sub">No coding knowledge needed. Answer 40 simple questions about how you think, what excites you, and how you approach life — and we'll reveal your natural home in tech.</div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num">40</div><div class="stat-label">Questions</div></div>
+        <div class="stat"><div class="stat-num">~6 min</div><div class="stat-label">Duration</div></div>
+        <div class="stat"><div class="stat-num">AI</div><div class="stat-label">Powered</div></div>
+        <div class="stat"><div class="stat-num">Free</div><div class="stat-label">Always</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="form-group">
+        <label class="form-label" for="input-name">Your Full Name</label>
+        <input class="form-input" id="input-name" type="text" placeholder="e.g. Amara Johnson" maxlength="80" autocomplete="name"/>
+        <div class="field-error" id="err-name"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="input-email">Email Address</label>
+        <input class="form-input" id="input-email" type="email" placeholder="you@example.com" maxlength="254" autocomplete="email"/>
+        <div class="field-error" id="err-email"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="input-whatsapp">WhatsApp Number</label>
+        <input class="form-input" id="input-whatsapp" type="tel" placeholder="+234 800 000 0000" maxlength="20" autocomplete="tel"/>
+        <div class="field-error" id="err-whatsapp"></div>
+      </div>
+      <br/>
+      <button class="btn btn-primary" id="start-btn" onclick="startQuiz()">Discover My Tech Path →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <div class="progress-label" id="q-label">Question 1 of 40</div>
+        <div class="progress-pct" id="q-pct">0%</div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="question-card">
+      <div class="q-chip" id="q-chip">Getting to know you</div>
+      <div class="question-text" id="question-text"></div>
+      <div class="options-grid" id="options-grid"></div>
+    </div>
+  </div>
+
+  <!-- ANALYZING -->
+  <div class="screen" id="screen-analyzing">
+    <div class="analyzing-wrap">
+      <div class="pulse-ring">
+        <div class="pulse-core">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            <path d="M7 8 Q13 13 19 8" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M7 18 Q13 13 19 18" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M7 8 C4 11 4 15 7 18" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M19 8 C22 11 22 15 19 18" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <circle cx="13" cy="13" r="2" fill="white"/>
+          </svg>
+        </div>
+      </div>
+      <div class="analyzing-title">Reading your TechDNA…</div>
+      <div class="analyzing-sub">Gemini AI is mapping your thinking patterns</div>
+      <div class="steps">
+        <div class="step" id="step1"><div class="step-dot"></div>Analysing your response patterns</div>
+        <div class="step" id="step2"><div class="step-dot"></div>Mapping to tech career profiles</div>
+        <div class="step" id="step3"><div class="step-dot"></div>Generating your personal insight</div>
+        <div class="step" id="step4"><div class="step-dot"></div>Finalising your results</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-results">
+    <div class="result-top">
+      <div class="result-congrats">Your TechDNA is ready</div>
+      <div class="result-greeting" id="result-greeting"></div>
+      <div class="result-path" id="result-primary-path"></div>
+      <div class="result-tagline">Your natural home in tech</div>
+    </div>
+    <div class="result-analysis-card">
+      <div class="card-eyebrow">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0L7.5 4.5H12L8.25 7.25L9.75 12L6 9.25L2.25 12L3.75 7.25L0 4.5H4.5L6 0Z"/></svg>
+        Why this path fits you
+      </div>
+      <div class="analysis-text" id="result-analysis"></div>
+    </div>
+    <div class="secondary-card">
+      <div class="secondary-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="9" stroke="white" stroke-width="2"/>
+          <path d="M11 6 L11 11 L15 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="secondary-label">Also explore</div>
+        <div class="secondary-name" id="result-secondary-path"></div>
+      </div>
+    </div>
+    <div class="followup-banner">
+      📬 A personal email is on its way to your inbox.<br/>
+      <strong>Victor, Tech Sherpa</strong> will reach out to guide your next steps.
+    </div>
+  </div>
+
+  <!-- ERROR SCREEN -->
+  <div class="screen" id="screen-error">
+    <div class="error-screen">
+      <h2>Something went wrong</h2>
+      <p id="error-detail">We couldn't process your results. Please check your connection and try again.</p>
+      <button class="btn btn-primary" style="max-width:240px;margin:0 auto;" onclick="location.reload()">Start Over</button>
+    </div>
+  </div>
+
+</div>
+<script>
+  // ── RATE LIMITING (client-side) ──
+  // Prevents the same browser from submitting more than once per 10 minutes
+  const RATE_LIMIT_KEY = 'techdna_last_submit';
+  const RATE_LIMIT_MS  = 10 * 60 * 1000; // 10 minutes
+
+  function isRateLimited() {
+    try {
+      const last = sessionStorage.getItem(RATE_LIMIT_KEY);
+      return last && (Date.now() - parseInt(last)) < RATE_LIMIT_MS;
+    } catch { return false; }
+  }
+  function markSubmitted() {
+    try { sessionStorage.setItem(RATE_LIMIT_KEY, Date.now().toString()); } catch {}
+  }
+
+  // ── INPUT VALIDATORS ──
+  // Strips emojis and non-printable/control characters
+  function stripUnsafe(str) {
+    return str
+      // Remove emojis (broad unicode emoji ranges)
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+      .replace(/[\u{2600}-\u{27FF}]/gu, '')
+      .replace(/[\u{FE00}-\u{FEFF}]/gu, '')
+      // Remove HTML tags
+      .replace(/<[^>]*>/g, '')
+      // Remove null bytes and control characters (except normal whitespace)
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      .trim();
+  }
+
+  function validateName(raw) {
+    const val = stripUnsafe(raw);
+    // Allow letters (including accented), spaces, hyphens, apostrophes — 2 to 80 chars
+    const nameRegex = /^[a-zA-ZÀ-ÖØ-öø-ÿ' \-]{2,80}$/;
+    if (!val) return { ok: false, msg: 'Please enter your full name.' };
+    if (!nameRegex.test(val)) return { ok: false, msg: 'Name should contain letters only (2–80 characters).' };
+    return { ok: true, val };
+  }
+
+  function validateEmail(raw) {
+    const val = stripUnsafe(raw).toLowerCase();
+    // RFC-5321 practical regex
+    const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    if (!val) return { ok: false, msg: 'Please enter your email address.' };
+    if (val.length > 254) return { ok: false, msg: 'Email address is too long.' };
+    if (!emailRegex.test(val)) return { ok: false, msg: 'Please enter a valid email address.' };
+    // Reject obviously fake TLDs or single-char domains
+    const parts = val.split('@');
+    if (parts[1] && parts[1].split('.').pop().length < 2) return { ok: false, msg: 'Please enter a valid email address.' };
+    return { ok: true, val };
+  }
+
+  function validateWhatsApp(raw) {
+    const val = stripUnsafe(raw).replace(/\s/g, '');
+    // International format: optional + then 7–15 digits
+    const phoneRegex = /^\+?[0-9]{7,15}$/;
+    if (!val) return { ok: false, msg: 'Please enter your WhatsApp number.' };
+    if (!phoneRegex.test(val)) return { ok: false, msg: 'Enter a valid phone number (digits only, 7–15 characters).' };
+    return { ok: true, val };
+  }
+
+  function showFieldError(fieldId, errId, message) {
+    const input = document.getElementById(fieldId);
+    const errEl = document.getElementById(errId);
+    if (input) input.classList.add('invalid');
+    if (errEl) { errEl.textContent = message; errEl.classList.add('visible'); }
+  }
+
+  function clearFieldError(fieldId, errId) {
+    const input = document.getElementById(fieldId);
+    const errEl = document.getElementById(errId);
+    if (input) input.classList.remove('invalid');
+    if (errEl) errEl.classList.remove('visible');
+  }
+
+  // Live validation on blur
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('input-name').addEventListener('blur', () => {
+      const r = validateName(document.getElementById('input-name').value);
+      r.ok ? clearFieldError('input-name','err-name') : showFieldError('input-name','err-name', r.msg);
+    });
+    document.getElementById('input-email').addEventListener('blur', () => {
+      const r = validateEmail(document.getElementById('input-email').value);
+      r.ok ? clearFieldError('input-email','err-email') : showFieldError('input-email','err-email', r.msg);
+    });
+    document.getElementById('input-whatsapp').addEventListener('blur', () => {
+      const r = validateWhatsApp(document.getElementById('input-whatsapp').value);
+      r.ok ? clearFieldError('input-whatsapp','err-whatsapp') : showFieldError('input-whatsapp','err-whatsapp', r.msg);
+    });
+  });
+
+  // ── STATE ──
+  let userData = {}, answers = [], currentQ = 0, submitting = false;
+
+  // ── START QUIZ ──
+  function startQuiz() {
+    if (submitting) return;
+
+    const nameRaw     = document.getElementById('input-name').value;
+    const emailRaw    = document.getElementById('input-email').value;
+    const whatsappRaw = document.getElementById('input-whatsapp').value;
+
+    const nameResult     = validateName(nameRaw);
+    const emailResult    = validateEmail(emailRaw);
+    const whatsappResult = validateWhatsApp(whatsappRaw);
+
+    let valid = true;
+
+    if (!nameResult.ok)     { showFieldError('input-name','err-name', nameResult.msg); valid = false; }
+    else                      clearFieldError('input-name','err-name');
+
+    if (!emailResult.ok)    { showFieldError('input-email','err-email', emailResult.msg); valid = false; }
+    else                      clearFieldError('input-email','err-email');
+
+    if (!whatsappResult.ok) { showFieldError('input-whatsapp','err-whatsapp', whatsappResult.msg); valid = false; }
+    else                      clearFieldError('input-whatsapp','err-whatsapp');
+
+    if (!valid) return;
+
+    if (isRateLimited()) {
+      showFieldError('input-email','err-email','You\'ve already submitted recently. Please wait a few minutes before trying again.');
+      return;
+    }
+
+    userData = { name: nameResult.val, email: emailResult.val, whatsapp: whatsappResult.val };
+    answers = []; currentQ = 0;
+    showScreen('screen-quiz');
+    renderQuestion();
+  }
+
+  // ── QUESTIONS ──
+  const questions = [
+    { chip: "How you think", text: "When you face a problem you've never seen before, what do you naturally do first?", options: ["Break it down into smaller pieces and tackle each one", "Look for a pattern or similarity to something I already know", "Ask someone who might know more than me", "Try different things until something works"] },
+    { chip: "How you think", text: "You're given a jigsaw puzzle with no picture on the box. How do you feel?", options: ["Excited — I love figuring things out from scratch", "Curious — I'll look for patterns in the shapes", "Relaxed — I'll just start and see where it goes", "Slightly anxious — I prefer knowing the end goal first"] },
+    { chip: "How you think", text: "A friend asks, 'Why does this machine work the way it does?' You respond:", options: ["Explain the logic and how each part connects", "Draw or sketch it out visually", "Look it up so I can give a precise answer", "Say let's find out together — and explore it with them"] },
+    { chip: "How you think", text: "When something goes wrong, your first instinct is to:", options: ["Find the exact root cause step by step", "Imagine what the ideal situation would look like", "Prevent it from ever happening again", "Focus on the impact on the people involved"] },
+    { chip: "How you think", text: "Which of these sounds most like you?", options: ["I notice things others miss in data or patterns", "I notice when something looks visually off", "I notice when a system or process is inefficient", "I notice when people are struggling or confused"] },
+    { chip: "Your personality", text: "You're most energised when you are:", options: ["Solving a really tough logical challenge alone", "Creating something others will see and appreciate", "Exploring how something works behind the scenes", "Helping someone understand or achieve something"] },
+    { chip: "Your personality", text: "At a social event, you're most likely to be:", options: ["Observing how everything is organised and set up", "Noticing the aesthetic details of the space", "Having a deep conversation about how the world works", "Introducing people to each other and keeping energy up"] },
+    { chip: "Your personality", text: "Your ideal free day looks like:", options: ["Learning something new through a course or tutorial", "Creating — writing, drawing, building, filming", "Going deep on a complex topic that interests you", "Spending time with people who challenge your thinking"] },
+    { chip: "Your personality", text: "How do you handle uncertainty?", options: ["I create a plan to reduce it systematically", "I embrace it and adapt creatively as I go", "I research everything I can before acting", "I talk it through with others to gain clarity"] },
+    { chip: "Your personality", text: "Which single word describes you best?", options: ["Precise", "Expressive", "Curious", "Empathetic"] },
+    { chip: "How you work", text: "You're most productive when:", options: ["Working alone with full focus on one task", "Working visually — sketching, mapping, designing", "Working with clear systems, rules, or structure", "Collaborating with others toward a shared goal"] },
+    { chip: "How you work", text: "If you had to spend a full week on one task, you'd choose:", options: ["Building something from scratch that actually works", "Designing the look and feel of a product", "Investigating how something was broken or compromised", "Studying data to find what's really going on"] },
+    { chip: "How you work", text: "When you receive feedback on your work, you prefer it to be:", options: ["Specific — tell me exactly what to fix", "Visual — show me what could look better", "Detailed — explain the logic behind the suggestion", "Encouraging — help me grow, not just correct me"] },
+    { chip: "How you work", text: "You feel most satisfied after a day where you:", options: ["Built or fixed something that now works perfectly", "Made something beautiful that people will experience", "Prevented a problem before it happened", "Explained something clearly and someone finally understood"] },
+    { chip: "How you work", text: "You're given a project with no instructions. You:", options: ["Map out the logic and start building", "Start sketching what it could look like", "Research similar projects to understand best practices", "Ask the people it's for what they actually need"] },
+    { chip: "What you're drawn to", text: "Which type of documentary would you most enjoy?", options: ["How the internet was built and how it works", "The history of design and visual culture", "The world's most daring digital investigations", "How technology is changing human behaviour and society"] },
+    { chip: "What you're drawn to", text: "If you could read one book this weekend, it would be about:", options: ["How great software systems are designed and built", "The psychology behind great design and user experience", "How investigators use digital clues to solve problems", "How organisations use information to make better decisions"] },
+    { chip: "What you're drawn to", text: "You walk into a tech store. You're most drawn to:", options: ["The hardware and infrastructure equipment", "The design and creative software tools", "The privacy and security gadgets", "The analytics and productivity software"] },
+    { chip: "What you're drawn to", text: "Which of these online communities sounds most interesting?", options: ["Developers sharing code and building tools together", "Designers sharing UI inspiration and feedback", "Security researchers sharing discoveries and techniques", "Analysts sharing dashboards and data insights"] },
+    { chip: "What you're drawn to", text: "Which phrase excites you most?", options: ["'We just built a system that handles millions of users'", "'We redesigned the experience and users love it'", "'We found and fixed a critical vulnerability'", "'The data told us this before anyone else saw it'"] },
+    { chip: "What drives you", text: "What would make your work feel most meaningful?", options: ["Knowing the system I built is fast, stable and trusted", "Knowing my design made someone's day easier or better", "Knowing I protected people from digital harm", "Knowing my insight changed an important decision"] },
+    { chip: "What drives you", text: "You're most proud when you:", options: ["Solve a problem no one else could crack", "Create something visually stunning from nothing", "Uncover something hidden that others missed", "Help someone succeed who was stuck before"] },
+    { chip: "What drives you", text: "What frustrates you most in daily life?", options: ["When things are slow, broken or inefficient", "When things are ugly, confusing or poorly laid out", "When people ignore obvious risks around them", "When decisions are made without any real evidence"] },
+    { chip: "What drives you", text: "If you could use technology to change one thing about the world, it would be:", options: ["Make software and tools accessible to everyone", "Make every digital experience more human and beautiful", "Make people's data and privacy truly safe", "Make data-informed decisions the global standard"] },
+    { chip: "What drives you", text: "Which achievement sounds most impressive to you personally?", options: ["I built an app used by 5 million people daily", "I designed an experience with a near-perfect satisfaction score", "I discovered a flaw that could have harmed millions", "I built a model that predicted an outcome no one expected"] },
+    { chip: "Real scenarios", text: "A friend's phone keeps doing something strange. You:", options: ["Ask to look at the settings and logs to diagnose it", "Notice if the interface itself is confusing or broken", "Immediately wonder if something unauthorised is happening", "Ask them to describe when it started and what changed"] },
+    { chip: "Real scenarios", text: "You notice a popular website looks terrible on mobile. You think:", options: ["There's likely a code error breaking the layout", "The designer didn't consider mobile users at all", "I wonder how many users they're losing because of this", "Someone should have tested this before it launched"] },
+    { chip: "Real scenarios", text: "You're asked to improve a school's admin system. Your first step is:", options: ["Look at how the current system is built technically", "Map out how users currently experience the system", "Check what data it stores and whether it's protected", "Talk to the teachers and students using it every day"] },
+    { chip: "Real scenarios", text: "A company's sales dropped 30% last month. You:", options: ["Check if there was a technical issue or outage", "Look at whether anything changed in the user experience", "Look for signs of fraud or a security incident", "Dive into the data to find the real cause"] },
+    { chip: "Real scenarios", text: "You accidentally discover private data exposed on a public page. You:", options: ["Report it and document exactly how it happened", "Think about how the design could have prevented the exposure", "Immediately want to understand how the vulnerability works", "Think about the real people whose information is at risk"] },
+    { chip: "Your lifestyle", text: "Which work environment suits you best?", options: ["Quiet and focused — deep technical problem solving", "Creative and collaborative — whiteboards and visual tools", "Alert-driven — real-time problems that need fast action", "People-facing — meetings, insights and strategy conversations"] },
+    { chip: "Your lifestyle", text: "You're happiest when your work involves:", options: ["Writing, testing and improving systems", "Sketching, prototyping and visual thinking", "Investigating, auditing and protecting", "Measuring, modelling and presenting findings"] },
+    { chip: "Your lifestyle", text: "How do you feel about learning something new every week?", options: ["I love it — building well requires staying current", "I love it — design and creativity are always evolving", "I love it — the landscape I work in changes constantly", "I love it — new ways of thinking sharpen my perspective"] },
+    { chip: "Your lifestyle", text: "How comfortable are you with open-ended tasks with no clear answer?", options: ["I prefer clear requirements and defined problems", "I thrive — open space is where creativity happens", "I manage well as long as I can investigate thoroughly", "I work best collaborating with others to find the way"] },
+    { chip: "Your lifestyle", text: "Which type of income source sounds most natural for your skills?", options: ["Getting paid to build and ship software", "Getting paid for design, branding or creative work", "Getting paid to find problems others couldn't find", "Getting paid to interpret data and advise decisions"] },
+    { chip: "The bigger picture", text: "Which quote resonates most deeply with you?", options: ["'Any sufficiently advanced technology is indistinguishable from magic'", "'Design is not just what it looks like — it's how it works'", "'The only truly secure system is one that is powered off'", "'Without data, you're just another person with an opinion'"] },
+    { chip: "The bigger picture", text: "Which type of tech company would you most want to work at?", options: ["An infrastructure company building tools the world runs on", "A product company known for beautiful user experiences", "A firm dedicated to protecting critical systems globally", "A company turning raw information into powerful decisions"] },
+    { chip: "The bigger picture", text: "You're mentoring a teenager who's curious about technology. What do you teach them first?", options: ["How to write their first simple program", "How to design a clean and clear interface", "How to think critically about digital security", "How to read and question data around them"] },
+    { chip: "The bigger picture", text: "If technology didn't exist, what kind of career do you think you'd have?", options: ["Engineer, scientist or mathematician", "Artist, architect or filmmaker", "Detective, investigator or analyst", "Economist, strategist or adviser"] },
+    { chip: "The bigger picture", text: "In 10 years, you want people to say about you:", options: ["'They built things that millions of people rely on every day'", "'They made technology feel human and welcoming'", "'They made the digital world safer for everyone in it'", "'They helped us see the truth hidden inside the numbers'"] },
+  ];
+
+  function renderQuestion() {
+    const q = questions[currentQ];
+    const pct = Math.round((currentQ / 40) * 100);
+    document.getElementById('q-label').textContent = `Question ${currentQ + 1} of 40`;
+    document.getElementById('q-pct').textContent = `${pct}%`;
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+    // textContent prevents XSS
+    document.getElementById('q-chip').textContent = q.chip;
+    document.getElementById('question-text').textContent = q.text;
+
+    const grid = document.getElementById('options-grid');
+    grid.innerHTML = '';
+    ['A','B','C','D'].forEach((letter, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.setAttribute('type', 'button');
+
+      const letterSpan = document.createElement('span');
+      letterSpan.className = 'option-letter';
+      letterSpan.textContent = letter; // textContent, not innerHTML
+
+      const textSpan = document.createElement('span');
+      textSpan.textContent = q.options[i]; // textContent, not innerHTML
+
+      btn.appendChild(letterSpan);
+      btn.appendChild(textSpan);
+      btn.addEventListener('click', () => selectAnswer(i, btn));
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(index, btn) {
+    // Disable all options to prevent double-clicks
+    document.querySelectorAll('.option-btn').forEach(b => {
+      b.classList.remove('selected');
+      b.disabled = true;
+    });
+    btn.classList.add('selected');
+
+    setTimeout(() => {
+      answers.push({
+        q: questions[currentQ].text,
+        a: questions[currentQ].options[index],
+        letter: ['A','B','C','D'][index]
+      });
+      currentQ++;
+      if (currentQ < 40) {
+        renderQuestion();
+      } else {
+        showScreen('screen-analyzing');
+        runSteps();
+        analyzeAndSend();
+      }
+    }, 380);
+  }
+
+  function runSteps() {
+    [1,2,3,4].forEach((n, i) => {
+      setTimeout(() => {
+        const el = document.getElementById(`step${n}`);
+        if (el) el.classList.add('done');
+      }, i * 1000 + 600);
+    });
+  }
+
+  // ── API CALLS (via Netlify Functions — no keys in frontend) ──
+  async function analyzeAndSend() {
+    if (submitting) return;
+    submitting = true;
+    markSubmitted();
+
+    let result;
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: userData.name, answers }),
+      });
+      if (!res.ok) throw new Error(`analyze: ${res.status}`);
+      result = await res.json();
+      if (!result.primaryPath || !result.secondaryPath || !result.analysis) throw new Error('Incomplete result');
+    } catch (e) {
+      console.error(e);
+      showError('We had trouble analysing your results. Please reload and try again.');
+      submitting = false;
+      return;
+    }
+
+    showResults(result);
+
+    // Send results email to Victor immediately
+    sendEmail(process.env.EMAILJS_TEMPLATE_RESULTS || 'template_vixz3mf', result, false);
+
+    // Send follow-up email to user after 3 minutes
+    setTimeout(() => {
+      sendEmail(process.env.EMAILJS_TEMPLATE_FOLLOWUP || 'template_wkae8m9', result, true);
+    }, 3 * 60 * 1000);
+
+    submitting = false;
+  }
+
+  async function sendEmail(templateId, result, isFollowup) {
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId,
+          name:          userData.name,
+          email:         userData.email,
+          whatsapp:      userData.whatsapp,
+          primaryPath:   result.primaryPath,
+          secondaryPath: result.secondaryPath,
+          aiResult:      result.analysis,
+        }),
+      });
+    } catch (e) {
+      console.error(`Email send failed (${isFollowup ? 'followup' : 'results'}):`, e);
+    }
+  }
+
+  // ── DISPLAY ──
+  function showResults(result) {
+    // All set via textContent — never innerHTML — to prevent XSS
+    document.getElementById('result-greeting').textContent = `${userData.name}, you are naturally wired for`;
+    document.getElementById('result-primary-path').textContent = result.primaryPath;
+    document.getElementById('result-analysis').textContent = result.analysis;
+    document.getElementById('result-secondary-path').textContent = result.secondaryPath;
+    showScreen('screen-results');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-detail');
+    if (el) el.textContent = msg;
+    showScreen('screen-error');
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>

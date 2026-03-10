@@ -1,50 +1,77 @@
 // netlify/functions/analyze.js
-// Server-side proxy for Gemini API — key never exposed to client
+const https = require('https');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 
-// Strict input sanitizer
+const headers = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Content-Type': 'application/json',
+};
+
 function sanitize(str) {
   if (typeof str !== 'string') return '';
-  // Strip HTML tags and dangerous characters
   return str
     .replace(/<[^>]*>/g, '')
-    .replace(/[&<>"'`]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','`':'&#x60;' }[c]))
+    .replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','`':'&#x60;'}[c]))
     .trim();
 }
 
-// Validate inputs server-side (second layer after client)
 function validateInputs({ name, answers }) {
-  if (!name || typeof name !== 'string' || name.length < 2 || name.length > 80) {
+  if (!name || typeof name !== 'string' || name.length < 2 || name.length > 80)
     return 'Invalid name';
-  }
-  if (!Array.isArray(answers) || answers.length !== 40) {
+  if (!Array.isArray(answers) || answers.length !== 40)
     return 'Invalid answers — expected exactly 40';
-  }
   for (const a of answers) {
-    if (typeof a.q !== 'string' || typeof a.a !== 'string' || typeof a.letter !== 'string') {
+    if (typeof a.q !== 'string' || typeof a.a !== 'string' || typeof a.letter !== 'string')
       return 'Malformed answer object';
-    }
-    if (a.q.length > 300 || a.a.length > 200 || !['A','B','C','D'].includes(a.letter)) {
+    if (a.q.length > 300 || a.a.length > 200 || !['A','B','C','D'].includes(a.letter))
       return 'Answer content out of bounds';
-    }
   }
   return null;
 }
 
+// Native HTTPS request (no fetch dependency)
+function httpsPost(url, data) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify(data);
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    };
+    const req = https.request(options, (res) => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => resolve({ status: res.statusCode, body: raw }));
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 exports.handler = async (event) => {
-  // Only allow POST
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  // Handle CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers };
   }
 
-  // CORS header
-  const headers = {
-    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-    'Content-Type': 'application/json',
-  };
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Check API key is set
+  if (!GEMINI_API_KEY) {
+    console.error('GEMINI_API_KEY environment variable is not set');
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfiguration' }) };
+  }
 
   let body;
   try {
@@ -76,27 +103,23 @@ Respond ONLY with valid JSON — no markdown, no extra text:
 }`;
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-      }
-    );
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const response = await httpsPost(geminiUrl, {
+      contents: [{ parts: [{ text: prompt }] }]
+    });
 
-    if (!res.ok) {
-      const err = await res.text();
-      console.error('Gemini error:', err);
-      return { statusCode: 502, headers, body: JSON.stringify({ error: 'AI service error' }) };
+    console.log('Gemini status:', response.status);
+
+    if (response.status !== 200) {
+      console.error('Gemini error body:', response.body);
+      return { statusCode: 502, headers, body: JSON.stringify({ error: 'AI service error', detail: response.status }) };
     }
 
-    const data = await res.json();
+    const data = JSON.parse(response.body);
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const clean = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
 
-    // Validate Gemini response shape
     if (!result.primaryPath || !result.secondaryPath || !result.analysis) {
       throw new Error('Incomplete AI response');
     }
@@ -111,7 +134,7 @@ Respond ONLY with valid JSON — no markdown, no extra text:
       }),
     };
   } catch (e) {
-    console.error('analyze function error:', e);
+    console.error('analyze function error:', e.message);
     return {
       statusCode: 500,
       headers,

@@ -144,6 +144,25 @@
   .option-btn.selected .option-letter { background: var(--accent); color: #fff; }
   .option-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
 
+  /* Q41 */
+  .q41-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 24px; padding: 48px 44px;
+    box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+  }
+  .q41-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, var(--accent), var(--warm));
+  }
+  .q41-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-soft); color: var(--accent);
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 5px 14px; border-radius: 100px; margin-bottom: 20px;
+  }
+  .q41-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 800; line-height: 1.3; margin-bottom: 12px; }
+  .q41-sub { color: var(--muted); font-size: 14px; line-height: 1.75; margin-bottom: 32px; }
+
   /* ANALYZING */
   .analyzing-wrap { text-align: center; padding: 80px 20px; }
   .pulse-ring { width: 90px; height: 90px; margin: 0 auto 32px; position: relative; }
@@ -204,7 +223,9 @@
     .intro-title { font-size: 28px; }
     .stats-row { gap: 8px; }
     .question-card { padding: 28px 20px 22px; }
+    .q41-card { padding: 32px 22px; }
     .question-text { font-size: 19px; }
+    .q41-title { font-size: 22px; }
     .result-path { font-size: 30px; }
     .result-top { padding: 32px 22px; }
   }
@@ -285,6 +306,32 @@
     </div>
   </div>
 
+  <!-- Q41 — COURSE INTEREST -->
+  <div class="screen" id="screen-q41">
+    <div class="q41-card">
+      <div class="q41-eyebrow">
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg>
+        One last question
+      </div>
+      <div class="q41-title">Would you invest in a structured course to get there faster?</div>
+      <div class="q41-sub">If someone could guide you step by step into your ideal tech path — with a clear curriculum, mentorship, and real projects — would you be open to paying for that?</div>
+      <div class="options-grid" id="q41-options">
+        <button class="option-btn" type="button" onclick="selectQ41(this, 'Yes, absolutely — I\'m ready to invest in myself')">
+          <span class="option-letter">A</span><span>Yes, absolutely — I'm ready to invest in myself</span>
+        </button>
+        <button class="option-btn" type="button" onclick="selectQ41(this, 'Maybe — it depends on the cost and what\'s included')">
+          <span class="option-letter">B</span><span>Maybe — it depends on the cost and what's included</span>
+        </button>
+        <button class="option-btn" type="button" onclick="selectQ41(this, 'I\'d prefer free resources for now')">
+          <span class="option-letter">C</span><span>I'd prefer free resources for now</span>
+        </button>
+        <button class="option-btn" type="button" onclick="selectQ41(this, 'I\'m not sure yet — I need more information first')">
+          <span class="option-letter">D</span><span>I'm not sure yet — I need more information first</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ANALYZING -->
   <div class="screen" id="screen-analyzing">
     <div class="analyzing-wrap">
@@ -354,10 +401,9 @@
 
 </div>
 <script>
-  // ── RATE LIMITING (client-side) ──
-  // Prevents the same browser from submitting more than once per 10 minutes
+  // ── RATE LIMITING ──
   const RATE_LIMIT_KEY = 'techdna_last_submit';
-  const RATE_LIMIT_MS  = 0 // 10 minutes 10 * 60 * 1000;
+  const RATE_LIMIT_MS  =  0 // 10 minutes 10 * 60 * 1000;
 
   function isRateLimited() {
     try {
@@ -370,23 +416,18 @@
   }
 
   // ── INPUT VALIDATORS ──
-  // Strips emojis and non-printable/control characters
   function stripUnsafe(str) {
     return str
-      // Remove emojis (broad unicode emoji ranges)
       .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
       .replace(/[\u{2600}-\u{27FF}]/gu, '')
       .replace(/[\u{FE00}-\u{FEFF}]/gu, '')
-      // Remove HTML tags
       .replace(/<[^>]*>/g, '')
-      // Remove null bytes and control characters (except normal whitespace)
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
       .trim();
   }
 
   function validateName(raw) {
     const val = stripUnsafe(raw);
-    // Allow letters (including accented), spaces, hyphens, apostrophes — 2 to 80 chars
     const nameRegex = /^[a-zA-ZÀ-ÖØ-öø-ÿ' \-]{2,80}$/;
     if (!val) return { ok: false, msg: 'Please enter your full name.' };
     if (!nameRegex.test(val)) return { ok: false, msg: 'Name should contain letters only (2–80 characters).' };
@@ -395,12 +436,10 @@
 
   function validateEmail(raw) {
     const val = stripUnsafe(raw).toLowerCase();
-    // RFC-5321 practical regex
     const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
     if (!val) return { ok: false, msg: 'Please enter your email address.' };
     if (val.length > 254) return { ok: false, msg: 'Email address is too long.' };
     if (!emailRegex.test(val)) return { ok: false, msg: 'Please enter a valid email address.' };
-    // Reject obviously fake TLDs or single-char domains
     const parts = val.split('@');
     if (parts[1] && parts[1].split('.').pop().length < 2) return { ok: false, msg: 'Please enter a valid email address.' };
     return { ok: true, val };
@@ -408,7 +447,6 @@
 
   function validateWhatsApp(raw) {
     const val = stripUnsafe(raw).replace(/\s/g, '');
-    // International format: optional + then 7–15 digits
     const phoneRegex = /^\+?[0-9]{7,15}$/;
     if (!val) return { ok: false, msg: 'Please enter your WhatsApp number.' };
     if (!phoneRegex.test(val)) return { ok: false, msg: 'Enter a valid phone number (digits only, 7–15 characters).' };
@@ -429,7 +467,6 @@
     if (errEl) errEl.classList.remove('visible');
   }
 
-  // Live validation on blur
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('input-name').addEventListener('blur', () => {
       const r = validateName(document.getElementById('input-name').value);
@@ -446,7 +483,7 @@
   });
 
   // ── STATE ──
-  let userData = {}, answers = [], currentQ = 0, submitting = false;
+  let userData = {}, answers = [], currentQ = 0, submitting = false, courseInterest = '';
 
   // ── START QUIZ ──
   function startQuiz() {
@@ -461,16 +498,12 @@
     const whatsappResult = validateWhatsApp(whatsappRaw);
 
     let valid = true;
-
     if (!nameResult.ok)     { showFieldError('input-name','err-name', nameResult.msg); valid = false; }
     else                      clearFieldError('input-name','err-name');
-
     if (!emailResult.ok)    { showFieldError('input-email','err-email', emailResult.msg); valid = false; }
     else                      clearFieldError('input-email','err-email');
-
     if (!whatsappResult.ok) { showFieldError('input-whatsapp','err-whatsapp', whatsappResult.msg); valid = false; }
     else                      clearFieldError('input-whatsapp','err-whatsapp');
-
     if (!valid) return;
 
     if (isRateLimited()) {
@@ -479,7 +512,7 @@
     }
 
     userData = { name: nameResult.val, email: emailResult.val, whatsapp: whatsappResult.val };
-    answers = []; currentQ = 0;
+    answers = []; currentQ = 0; courseInterest = '';
     showScreen('screen-quiz');
     renderQuestion();
   }
@@ -534,7 +567,6 @@
     document.getElementById('q-label').textContent = `Question ${currentQ + 1} of 40`;
     document.getElementById('q-pct').textContent = `${pct}%`;
     document.getElementById('progress-fill').style.width = `${pct}%`;
-    // textContent prevents XSS
     document.getElementById('q-chip').textContent = q.chip;
     document.getElementById('question-text').textContent = q.text;
 
@@ -544,14 +576,11 @@
       const btn = document.createElement('button');
       btn.className = 'option-btn';
       btn.setAttribute('type', 'button');
-
       const letterSpan = document.createElement('span');
       letterSpan.className = 'option-letter';
-      letterSpan.textContent = letter; // textContent, not innerHTML
-
+      letterSpan.textContent = letter;
       const textSpan = document.createElement('span');
-      textSpan.textContent = q.options[i]; // textContent, not innerHTML
-
+      textSpan.textContent = q.options[i];
       btn.appendChild(letterSpan);
       btn.appendChild(textSpan);
       btn.addEventListener('click', () => selectAnswer(i, btn));
@@ -560,13 +589,11 @@
   }
 
   function selectAnswer(index, btn) {
-    // Disable all options to prevent double-clicks
     document.querySelectorAll('.option-btn').forEach(b => {
       b.classList.remove('selected');
       b.disabled = true;
     });
     btn.classList.add('selected');
-
     setTimeout(() => {
       answers.push({
         q: questions[currentQ].text,
@@ -577,10 +604,24 @@
       if (currentQ < 40) {
         renderQuestion();
       } else {
-        showScreen('screen-analyzing');
-        runSteps();
-        analyzeAndSend();
+        // All 40 done — show Q41 before analyzing
+        showScreen('screen-q41');
       }
+    }, 380);
+  }
+
+  // ── Q41 HANDLER ──
+  function selectQ41(btn, answer) {
+    document.querySelectorAll('#q41-options .option-btn').forEach(b => {
+      b.classList.remove('selected');
+      b.disabled = true;
+    });
+    btn.classList.add('selected');
+    courseInterest = answer;
+    setTimeout(() => {
+      showScreen('screen-analyzing');
+      runSteps();
+      analyzeAndSend();
     }, 380);
   }
 
@@ -593,7 +634,7 @@
     });
   }
 
-  // ── API CALLS (via Netlify Functions — no keys in frontend) ──
+  // ── API CALLS ──
   async function analyzeAndSend() {
     if (submitting) return;
     submitting = true;
@@ -618,12 +659,12 @@
 
     showResults(result);
 
-    // Send results email to Victor immediately
-    sendEmail(process.env.EMAILJS_TEMPLATE_RESULTS || 'template_vixz3mf', result, false);
+    // Send results email to Victor immediately (includes course_interest)
+    sendEmail('template_vixz3mf', result, false);
 
     // Send follow-up email to user after 3 minutes
     setTimeout(() => {
-      sendEmail(process.env.EMAILJS_TEMPLATE_FOLLOWUP || 'template_wkae8m9', result, true);
+      sendEmail('template_wkae8m9', result, true);
     }, 3 * 60 * 1000);
 
     submitting = false;
@@ -636,12 +677,13 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           templateId,
-          name:          userData.name,
-          email:         userData.email,
-          whatsapp:      userData.whatsapp,
-          primaryPath:   result.primaryPath,
-          secondaryPath: result.secondaryPath,
-          aiResult:      result.analysis,
+          name:           userData.name,
+          email:          userData.email,
+          whatsapp:       userData.whatsapp,
+          primaryPath:    result.primaryPath,
+          secondaryPath:  result.secondaryPath,
+          aiResult:       result.analysis,
+          courseInterest: courseInterest,
         }),
       });
     } catch (e) {
@@ -651,7 +693,6 @@
 
   // ── DISPLAY ──
   function showResults(result) {
-    // All set via textContent — never innerHTML — to prevent XSS
     document.getElementById('result-greeting').textContent = `${userData.name}, you are naturally wired for`;
     document.getElementById('result-primary-path').textContent = result.primaryPath;
     document.getElementById('result-analysis').textContent = result.analysis;

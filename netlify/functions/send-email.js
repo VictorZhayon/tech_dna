@@ -72,12 +72,13 @@ exports.handler = async (event) => {
       user_id:     EMAILJS_PUBLIC_KEY,
       accessToken: EMAILJS_PRIVATE_KEY,
       template_params: {
-        user_name:      sanitize(body.name),
-        user_email:     sanitize(body.email),
-        user_whatsapp:  sanitize(body.whatsapp || ''),
-        primary_path:   sanitize(body.primaryPath || ''),
-        secondary_path: sanitize(body.secondaryPath || ''),
-        ai_result:      sanitize(body.aiResult || ''),
+        user_name:       sanitize(body.name),
+        user_email:      sanitize(body.email),
+        user_whatsapp:   sanitize(body.whatsapp || ''),
+        primary_path:    sanitize(body.primaryPath || ''),
+        secondary_path:  sanitize(body.secondaryPath || ''),
+        ai_result:       sanitize(body.aiResult || ''),
+        course_interest: sanitize(body.courseInterest || 'Not answered'),
       },
     });
 

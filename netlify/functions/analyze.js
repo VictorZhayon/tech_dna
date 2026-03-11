@@ -22,7 +22,7 @@ function validateInputs({ name, answers }) {
   if (!name || typeof name !== 'string' || name.length < 2 || name.length > 80)
     return 'Invalid name';
   if (!Array.isArray(answers) || answers.length !== 40)
-    return 'Invalid answers — expected exactly 40';
+    return 'Invalid answers — expected exactly 40 (Q41 is handled separately)';
   for (const a of answers) {
     if (typeof a.q !== 'string' || typeof a.a !== 'string' || typeof a.letter !== 'string')
       return 'Malformed answer object';

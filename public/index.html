@@ -662,10 +662,8 @@
     // Send results email to Victor immediately (includes course_interest)
     sendEmail('template_vixz3mf', result, false);
 
-    // Send follow-up email to user after 3 minutes
-    setTimeout(() => {
-      sendEmail('template_wkae8m9', result, true);
-    }, 3 * 60 * 1000);
+    // Send follow-up email to user immediately
+    sendEmail('template_wkae8m9', result, true);
 
     submitting = false;
   }

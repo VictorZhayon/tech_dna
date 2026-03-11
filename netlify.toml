@@ -2,17 +2,6 @@
   publish = "public"
   functions = "netlify/functions"
 
-# Route /api/* to Netlify functions
-[[redirects]]
-  from = "/api/analyze"
-  to = "/.netlify/functions/analyze"
-  status = 200
-
-[[redirects]]
-  from = "/api/send-email"
-  to = "/.netlify/functions/send-email"
-  status = 200
-
 [[headers]]
   for = "/*"
   [headers.values]
@@ -20,4 +9,4 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self' https://api.emailjs.com https://generativelanguage.googleapis.com https://api.emailjs.com; img-src 'self' data:;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; connect-src 'self' https://api.emailjs.com https://generativelanguage.googleapis.com; img-src 'self' data:; media-src 'none';"

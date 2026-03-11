@@ -284,7 +284,7 @@
         <div class="field-error" id="err-whatsapp"></div>
       </div>
       <br/>
-      <button class="btn btn-primary" id="start-btn" onclick="startQuiz()">Discover My Tech Path →</button>
+      <button class="btn btn-primary" id="start-btn">Discover My Tech Path →</button>
     </div>
   </div>
 
@@ -316,16 +316,16 @@
       <div class="q41-title">Would you invest in a structured course to get there faster?</div>
       <div class="q41-sub">If someone could guide you step by step into your ideal tech path — with a clear curriculum, mentorship, and real projects — would you be open to paying for that?</div>
       <div class="options-grid" id="q41-options">
-        <button class="option-btn" type="button" onclick="selectQ41(this, 'Yes, absolutely — I\'m ready to invest in myself')">
+        <button class="option-btn" type="button" data-answer="Yes, absolutely — I'm ready to invest in myself">
           <span class="option-letter">A</span><span>Yes, absolutely — I'm ready to invest in myself</span>
         </button>
-        <button class="option-btn" type="button" onclick="selectQ41(this, 'Maybe — it depends on the cost and what\'s included')">
+        <button class="option-btn" type="button" data-answer="Maybe — it depends on the cost and what's included">
           <span class="option-letter">B</span><span>Maybe — it depends on the cost and what's included</span>
         </button>
-        <button class="option-btn" type="button" onclick="selectQ41(this, 'I\'d prefer free resources for now')">
+        <button class="option-btn" type="button" data-answer="I'd prefer free resources for now">
           <span class="option-letter">C</span><span>I'd prefer free resources for now</span>
         </button>
-        <button class="option-btn" type="button" onclick="selectQ41(this, 'I\'m not sure yet — I need more information first')">
+        <button class="option-btn" type="button" data-answer="I'm not sure yet — I need more information first">
           <span class="option-letter">D</span><span>I'm not sure yet — I need more information first</span>
         </button>
       </div>
@@ -403,7 +403,7 @@
 <script>
   // ── RATE LIMITING ──
   const RATE_LIMIT_KEY = 'techdna_last_submit';
-  const RATE_LIMIT_MS  =  0 // 10 minutes 10 * 60 * 1000;
+  const RATE_LIMIT_MS  = 0 // 10 minutes 10 * 60 * 1000;
 
   function isRateLimited() {
     try {
@@ -468,6 +468,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('start-btn').addEventListener('click', startQuiz);
+
     document.getElementById('input-name').addEventListener('blur', () => {
       const r = validateName(document.getElementById('input-name').value);
       r.ok ? clearFieldError('input-name','err-name') : showFieldError('input-name','err-name', r.msg);
@@ -479,6 +481,13 @@
     document.getElementById('input-whatsapp').addEventListener('blur', () => {
       const r = validateWhatsApp(document.getElementById('input-whatsapp').value);
       r.ok ? clearFieldError('input-whatsapp','err-whatsapp') : showFieldError('input-whatsapp','err-whatsapp', r.msg);
+    });
+
+    // Q41 buttons — no inline onclick
+    document.querySelectorAll('#q41-options .option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectQ41(btn, btn.getAttribute('data-answer'));
+      });
     });
   });
 
@@ -611,6 +620,7 @@
   }
 
   // ── Q41 HANDLER ──
+  // Attached via addEventListener in DOMContentLoaded — no inline onclick
   function selectQ41(btn, answer) {
     document.querySelectorAll('#q41-options .option-btn').forEach(b => {
       b.classList.remove('selected');

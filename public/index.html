@@ -405,7 +405,7 @@
 <script>
   // ── RATE LIMITING ──
   const RATE_LIMIT_KEY = 'techdna_last_submit';
-  const RATE_LIMIT_MS  = 0 // 10 minutes  10 * 60 * 1000;
+  const RATE_LIMIT_MS  = 0 // 10 minutes 10 * 60 * 1000;
 
   function isRateLimited() {
     try {
@@ -600,7 +600,7 @@
   }
 
   function selectAnswer(index, btn) {
-    document.querySelectorAll('.option-btn').forEach(b => {
+    document.querySelectorAll('#options-grid .option-btn').forEach(b => {
       b.classList.remove('selected');
       b.disabled = true;
     });

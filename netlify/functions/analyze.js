@@ -103,7 +103,7 @@ Respond ONLY with valid JSON — no markdown, no extra text:
 }`;
 
   try {
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
     const response = await httpsPost(geminiUrl, {
       contents: [{ parts: [{ text: prompt }] }]
     });

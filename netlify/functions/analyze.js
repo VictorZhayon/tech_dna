@@ -99,7 +99,7 @@ Respond ONLY with valid JSON — no markdown, no extra text:
 {
   "primaryPath": "The single most fitting tech career path name",
   "secondaryPath": "A complementary second path worth exploring",
-  "analysis": "A warm, personal, motivating 3-4 sentence paragraph explaining exactly why ${safeName} is naturally suited to their primary path. Reference specific patterns in their thinking and personality. Make it feel written just for them."
+  "analysis": "A warm, personal, motivating 3-4 sentence paragraph explaining exactly why ${safeName} is naturally suited to their primary path. Write it like a trusted mentor speaking directly to them — no question numbers, no clinical references, just genuine human insight about their thinking style, values and personality. Make it feel like it could only have been written for them specifically."
 }`;
 
   try {
@@ -128,9 +128,9 @@ Respond ONLY with valid JSON — no markdown, no extra text:
       statusCode: 200,
       headers,
       body: JSON.stringify({
-        primaryPath: sanitize(result.primaryPath),
-        secondaryPath: sanitize(result.secondaryPath),
-        analysis: sanitize(result.analysis),
+        primaryPath: result.primaryPath,
+        secondaryPath: result.secondaryPath,
+        analysis: result.analysis,
       }),
     };
   } catch (e) {

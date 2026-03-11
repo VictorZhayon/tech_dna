@@ -357,7 +357,7 @@
   // ── RATE LIMITING (client-side) ──
   // Prevents the same browser from submitting more than once per 10 minutes
   const RATE_LIMIT_KEY = 'techdna_last_submit';
-  const RATE_LIMIT_MS  = 10 * 60 * 1000; // 10 minutes
+  const RATE_LIMIT_MS  = 0 // 10 minutes 10 * 60 * 1000;
 
   function isRateLimited() {
     try {

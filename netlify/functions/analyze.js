@@ -32,6 +32,15 @@ function validateInputs({ name, answers }) {
   return null;
 }
 
+function sanitizeExtra(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str
+    .replace(/<[^>]*>/g, '')
+    .replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','`':'&#x60;'}[c]))
+    .slice(0, 600)
+    .trim();
+}
+
 // Native HTTPS request (no fetch dependency)
 function httpsPost(url, data) {
   return new Promise((resolve, reject) => {
@@ -85,15 +94,22 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: validationError }) };
   }
 
-  const safeName = sanitize(body.name);
+  const safeName    = sanitize(body.name);
+  const safeExtra   = sanitizeExtra(body.extraInfo || '');
   const answersText = body.answers
     .map((a, i) => `Q${i+1}: ${sanitize(a.q)}\nAnswer ${sanitize(a.letter)}: ${sanitize(a.a)}`)
     .join('\n\n');
+
+  const extraSection = safeExtra
+    ? `\nAdditional context from ${safeName}:\n"${safeExtra}"\nFactor this into your analysis, especially the written paragraph.\n`
+    : '';
 
   const prompt = `You are TechDNA, an expert tech career analyst. ${safeName} has completed a 40-question psychological assessment. Analyse ALL answers holistically.
 
 Answers:
 ${answersText}
+${extraSection}
+Available paths include (but are not limited to): Software Development, UI/UX Design, Cybersecurity, Data Analytics, IT Support, Video Editing / Content Creation, E-commerce / Tech Sales, Web3 / Blockchain, Fintech, Digital Marketing, Product Management, Cloud Computing.
 
 Respond ONLY with valid JSON — no markdown, no extra text:
 {

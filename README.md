@@ -2,8 +2,6 @@
 
 An AI-powered career discovery quiz that reveals where you naturally belong in tech — no experience needed.
 
-Built under the **GemNexus Digital Literacy Training** brand.
-
 ---
 
 ## What It Does
